@@ -20,10 +20,13 @@ dirmap =
 match :: String -> String -> Bool
 match = L.isInfixOf
 
-handleCommand :: String -> String
-handleCommand c =
-  let res = M.filterWithKey (const . (match c)) dirmap
-  in concat . L.intersperse "\n" $ M.elems res
+fmtDirs :: Map String String -> String
+fmtDirs = concat . L.intersperse "\n" . M.elems
+
+handleCommand :: [String] -> String
+handleCommand ("cd":x:_) = fmtDirs $ M.filterWithKey (const . (match x)) dirmap
+handleCommand ("cdl":_) = fmtDirs $ dirmap
+handleCommand _ = undefined
 
 main :: IO ()
-main = mapM_ (putStrLn . handleCommand) =<< getArgs
+main = (putStrLn . handleCommand) =<< getArgs
