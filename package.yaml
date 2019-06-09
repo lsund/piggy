@@ -17,6 +17,7 @@ dependencies:
 - containers
 - process
 - split
+- directory
 
 library:
   source-dirs: src
