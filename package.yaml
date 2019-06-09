@@ -1,0 +1,43 @@
+name:                piggy
+version:             0.1.0.0
+github:              "githubuser/piggy"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2019 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+description:         Please see the README on GitHub at <https://github.com/githubuser/piggy#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- process
+
+library:
+  source-dirs: src
+
+executables:
+  piggy-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - piggy
+
+tests:
+  piggy-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - piggy
