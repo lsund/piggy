@@ -40,7 +40,14 @@ fmtDirs m =
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
-addDirTo :: FilePath -> String -> String -> IO String
+matchDir :: Map String Location -> String -> FilePath
+matchDir m x =
+  let matches = M.filterWithKey (const . match x) m
+  in case length matches of
+    1 -> _path . snd . head $ M.toList matches
+    _ -> undefined
+
+addDirTo :: FilePath -> String -> FilePath -> IO String
 addDirTo fname tag path = do
   cwd <- getCurrentDirectory
   "OK" <$
@@ -51,9 +58,8 @@ addDirTo fname tag path = do
          then cwd
          else path <> ",0")
 
-handleCommand :: Map String Location -> [String] -> IO String
-handleCommand dirmap ("cd":x:_) =
-  return . fmtDirs $ M.filterWithKey (const . match x) dirmap
+handleCommand :: Map String Location -> [String] -> IO FilePath
+handleCommand dirmap ("cd":x:_) = return $ matchDir dirmap x
 handleCommand dirmap ("cdl":_) = return . fmtDirs $ dirmap
 handleCommand _ ("a":tag:path:_) = addDirTo dirSpecFile tag path
 handleCommand _ _ = undefined
