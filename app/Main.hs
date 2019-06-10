@@ -46,6 +46,6 @@ readDirsFrom fname =
 
 main :: IO ()
 main = do
+  createDirectoryIfMissing True "resources"
   dirs <- readDirsFrom dirSpecFile
-  s <- handleCommand dirs =<< getArgs
-  putStrLn s
+  getArgs >>= handleCommand dirs >>= putStrLn
