@@ -18,6 +18,7 @@ dependencies:
 - process
 - split
 - directory
+- lens
 
 library:
   source-dirs: src

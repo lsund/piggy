@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Lens
 import qualified Data.List as L
 import Data.List.Split (splitOn)
 import Data.Map (Map)
@@ -14,7 +15,8 @@ data Location =
   Location
     { _path :: FilePath
     , _timesAccessed :: Int
-    } deriving Eq
+    }
+  deriving (Eq)
 
 instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
@@ -32,23 +34,20 @@ parseLine _ = undefined
 match :: String -> String -> Bool
 match = L.isInfixOf
 
-compareBy :: Ord c => (a -> c) -> a -> a -> Ordering
-compareBy f x y = f x `compare` f y
-
 fmtDirs :: Map String Location -> String
 fmtDirs m =
-  -- TODO Use control arrow or similar
-  let xs = L.sortBy (\(_, x) (_, y) -> x `compare` y) $ M.toList m
-   in L.intercalate "\n" $ map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
+  let xs = L.sortBy (\x y -> (x ^. _2) `compare` (y ^. _2)) $ M.toList m
+   in L.intercalate "\n" $
+      map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
 matchDir :: Map String Location -> String -> FilePath
 matchDir m x =
   let matches = M.filterWithKey (const . match x) m
-  in case length matches of
-    1 -> _path . snd . head $ M.toList matches
-    _ -> undefined
+   in case length matches of
+        1 -> _path . snd . head $ M.toList matches
+        _ -> undefined
 
 addDirTo :: FilePath -> String -> FilePath -> IO String
 addDirTo fname tag path = do
@@ -58,8 +57,9 @@ addDirTo fname tag path = do
       fname
       ("\n" <> tag <> "," <>
        (if path == "."
-         then cwd
-         else path) <> ",0")
+          then cwd
+          else path) <>
+       ",0")
 
 handleCommand :: Map String Location -> [String] -> IO FilePath
 handleCommand m ("cd":x:_) = return $ matchDir m x
