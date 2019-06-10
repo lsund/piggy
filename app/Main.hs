@@ -8,18 +8,27 @@ import Prelude
 import System.Directory
 import System.Environment
 
+data Location =
+  Location
+    { _path :: FilePath
+    , _timesAccessed :: Int
+    }
+
 dirSpecFile :: FilePath
 dirSpecFile = "/home/lsund/Documents/tech/repos/piggy/resources/dirs.csv"
 
-tuplify2 :: [a] -> (a, a)
-tuplify2 [x, y] = (x, y)
-tuplify2 _ = undefined
+parseLine :: [String] -> (String, Location)
+parseLine [x, y, z] = (x, Location y (read z :: Int))
+parseLine _ = undefined
 
 match :: String -> String -> Bool
 match = L.isInfixOf
 
-fmtDirs :: Map String String -> String
-fmtDirs = L.intercalate "\n" . M.elems
+compareBy :: Ord c => (a -> c) -> a -> a -> Ordering
+compareBy f x y = f x `compare` f y
+
+fmtDirs :: Map String Location -> String
+fmtDirs = L.intercalate "\n" . map _path . L.sortBy (compareBy _timesAccessed) . M.elems
 
 addDirTo :: FilePath -> String -> String -> IO String
 addDirTo fname tag path = do
@@ -30,19 +39,19 @@ addDirTo fname tag path = do
       ("\n" <> tag <> "," <>
        if path == "."
          then cwd
-         else path)
+         else path <> ",0")
 
-handleCommand :: Map String String -> [String] -> IO String
+handleCommand :: Map String Location -> [String] -> IO String
 handleCommand dirmap ("cd":x:_) =
   return . fmtDirs $ M.filterWithKey (const . match x) dirmap
 handleCommand dirmap ("cdl":_) = return . fmtDirs $ dirmap
 handleCommand _ ("a":tag:path:_) = addDirTo dirSpecFile tag path
 handleCommand _ _ = undefined
 
-readDirsFrom :: FilePath -> IO (Map String String)
+readDirsFrom :: FilePath -> IO (Map String Location)
 readDirsFrom fname =
   M.fromList <$>
-  ((mapM (return . tuplify2 . splitOn ",") . lines) =<< readFile fname)
+  ((mapM (return . parseLine . splitOn ",") . lines) =<< readFile fname)
 
 main :: IO ()
 main = do

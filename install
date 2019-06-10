@@ -1,4 +1,7 @@
 #!/bin/zsh
 
-cp script/prog-cd ~/Documents/scripts
+scriptpath=scripts/prog-cd
+system_scriptpath=~/Documents/scripts
+echo "Copy $scriptpath to $system_scriptpath"
+cp  $scriptpath $system_scriptpath
 stack install
