@@ -14,7 +14,10 @@ data Location =
   Location
     { _path :: FilePath
     , _timesAccessed :: Int
-    }
+    } deriving Eq
+
+instance Ord Location where
+  compare (Location _ x) (Location _ y) = x `compare` y
 
 dirSpecFile :: FilePath
 dirSpecFile = "/home/lsund/Documents/tech/repos/piggy/resources/dirs.csv"
@@ -34,9 +37,9 @@ compareBy f x y = f x `compare` f y
 
 fmtDirs :: Map String Location -> String
 fmtDirs m =
-  let keys = M.keys m
-      vals = map _path . L.sortBy (compareBy _timesAccessed) . M.elems $ m
-   in L.intercalate "\n" $ zipWith (\x y -> y <> makeSpace y <> x) keys vals
+  -- TODO Use control arrow or similar
+  let xs = L.sortBy (\(_, x) (_, y) -> x `compare` y) $ M.toList m
+   in L.intercalate "\n" $ map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
@@ -54,13 +57,14 @@ addDirTo fname tag path = do
     appendFile
       fname
       ("\n" <> tag <> "," <>
-       if path == "."
+       (if path == "."
          then cwd
-         else path <> ",0")
+         else path) <> ",0")
 
 handleCommand :: Map String Location -> [String] -> IO FilePath
-handleCommand dirmap ("cd":x:_) = return $ matchDir dirmap x
-handleCommand dirmap ("cdl":_) = return . fmtDirs $ dirmap
+handleCommand m ("cd":x:_) = return $ matchDir m x
+handleCommand _ ("cd":_) = return ""
+handleCommand m ("cdl":_) = return . fmtDirs $ m
 handleCommand _ ("a":tag:path:_) = addDirTo dirSpecFile tag path
 handleCommand _ _ = undefined
 
