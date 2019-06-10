@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import qualified Data.List as L
@@ -17,6 +19,9 @@ data Location =
 dirSpecFile :: FilePath
 dirSpecFile = "/home/lsund/Documents/tech/repos/piggy/resources/dirs.csv"
 
+columnWidth :: Int
+columnWidth = 70
+
 parseLine :: [String] -> (String, Location)
 parseLine [x, y, z] = (x, Location y (read z :: Int))
 parseLine _ = undefined
@@ -28,7 +33,12 @@ compareBy :: Ord c => (a -> c) -> a -> a -> Ordering
 compareBy f x y = f x `compare` f y
 
 fmtDirs :: Map String Location -> String
-fmtDirs = L.intercalate "\n" . map _path . L.sortBy (compareBy _timesAccessed) . M.elems
+fmtDirs m =
+  let keys = M.keys m
+      vals = map _path . L.sortBy (compareBy _timesAccessed) . M.elems $ m
+   in L.intercalate "\n" $ zipWith (\x y -> y <> makeSpace y <> x) keys vals
+  where
+    makeSpace x = replicate (columnWidth - length x) ' '
 
 addDirTo :: FilePath -> String -> String -> IO String
 addDirTo fname tag path = do
