@@ -20,7 +20,7 @@ instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
 
 dirSpecFile :: FilePath
-dirSpecFile = "/home/lsund/Documents/tech/repos/piggy/resources/dirs.csv"
+dirSpecFile = "resources/dirs.csv"
 
 columnWidth :: Int
 columnWidth = 70
