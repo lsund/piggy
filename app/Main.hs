@@ -19,8 +19,9 @@ data Location =
 instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
 
+-- TODO make the /home/lsund a parameter
 dirSpecFile :: FilePath
-dirSpecFile = "resources/dirs.csv"
+dirSpecFile = "/home/lsund/.piggy/resources/dirs.csv"
 
 columnWidth :: Int
 columnWidth = 70
@@ -75,6 +76,6 @@ readDirsFrom fname =
 
 main :: IO ()
 main = do
-  createDirectoryIfMissing True "resources"
+  createDirectoryIfMissing True "/home/lsund/.piggy/resources"
   dirs <- readDirsFrom dirSpecFile
   getArgs >>= handleCommand dirs >>= putStrLn
