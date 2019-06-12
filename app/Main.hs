@@ -25,7 +25,7 @@ dirSpecFile :: FilePath
 dirSpecFile = "/home/lsund/.piggy/resources/dirs.csv"
 
 columnWidth :: Int
-columnWidth = 70
+columnWidth = 75
 
 parseLine :: [String] -> (String, Location)
 parseLine [x, y, z] = (x, Location y (read z :: Int))
@@ -61,7 +61,7 @@ addDirTo fname tag path = do
       (tag <> "," <>
        (if path == "."
          then cwd
-         else path) <> ",0")
+         else path) <> ",0\n")
 
 handleCommand :: Map String Location -> [String] -> IO FilePath
 handleCommand m ("cd":x:_) = return $ matchDir m x
