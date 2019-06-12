@@ -3,6 +3,7 @@
 module Main where
 
 import Control.Lens
+import Control.Monad
 import qualified Data.List as L
 import Data.List.Split (splitOn)
 import Data.Map (Map)
@@ -21,8 +22,9 @@ data Location =
 instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
 
+-- TODO make the /home/lsund a parameter
 dirSpecFile :: FilePath
-dirSpecFile = "/home/lsund/Documents/tech/repos/piggy/resources/dirs.csv"
+dirSpecFile = "/home/lsund/.piggy/resources/dirs.csv"
 
 columnWidth :: Int
 columnWidth = 70
@@ -55,7 +57,7 @@ addDirTo fname tag path = do
   "OK" <$
     appendFile
       fname
-      ("\n" <> tag <> "," <>
+      (tag <> "," <>
        (if path == "."
           then cwd
           else path) <>
@@ -75,6 +77,8 @@ readDirsFrom fname =
 
 main :: IO ()
 main = do
-  createDirectoryIfMissing True "resources"
+  createDirectoryIfMissing True "/home/lsund/.piggy/resources"
+  dirSpecExists <- doesFileExist dirSpecFile
+  when (not dirSpecExists) $ writeFile dirSpecFile ""
   dirs <- readDirsFrom dirSpecFile
   getArgs >>= handleCommand dirs >>= putStrLn
