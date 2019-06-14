@@ -41,11 +41,11 @@ addDirTo fname tag path = do
   (tag, Location expandedPath 0) <$
     appendFile fname (tag <> "," <> expandedPath <> ",0\n")
 
-firstMatch :: CliExpression a => String -> Map String a -> String
-firstMatch tag = fromMaybe "." . CliExpression.match tag
+firstMatch :: CliExpression a => String -> String -> Map String a -> String
+firstMatch fallback tag = fromMaybe fallback . CliExpression.match tag
 
 handleCommand :: (Map String Location, Map String Command) -> [String] -> IO String
-handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch tag locs
+handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
 handleCommand _ ("cd":_) = return ""
 handleCommand (locs, _) ("cdl":_) = (return . Location.format) locs
 handleCommand params ["ad", path] = do
@@ -54,7 +54,7 @@ handleCommand params ["ad", path] = do
 handleCommand (locs, cmds) ("ad":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
   (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["cdl"])
-handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch tag cmds
+handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
 handleCommand _ _ = return "Unknown command"
 
 readSpecFrom :: ([String] -> (String, a)) -> FilePath -> IO (Map String a)
