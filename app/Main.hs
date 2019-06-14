@@ -22,9 +22,17 @@ data Location =
 instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
 
--- TODO make the /home/lsund a parameter
-dirSpecFile :: FilePath
-dirSpecFile = "/home/lsund/.piggy/resources/dirs.csv"
+--------------------------------------------------------------------------------
+-- Configuration
+
+resourcesDir ::  FilePath
+resourcesDir = "/home/lsund/.piggy/resources"
+
+--------------------------------------------------------------------------------
+-- Program
+
+dirSpecFile :: FilePath -> FilePath
+dirSpecFile = flip (<>) "/dirs.csv"
 
 columnWidth :: Int
 columnWidth = 75
@@ -66,7 +74,7 @@ handleCommand :: Map String Location -> [String] -> IO FilePath
 handleCommand m ("cd":x:_) = return $ matchDir m x
 handleCommand _ ("cd":_) = return ""
 handleCommand m ("cdl":_) = return . fmtDirs $ m
-handleCommand _ ("a":tag:path:_) = addDirTo dirSpecFile tag path
+handleCommand _ ("a":tag:path:_) = addDirTo (dirSpecFile resourcesDir)  tag path
 handleCommand _ _ = undefined
 
 readDirsFrom :: FilePath -> IO (Map String Location)
@@ -76,8 +84,9 @@ readDirsFrom fname =
 
 main :: IO ()
 main = do
-  createDirectoryIfMissing True "/home/lsund/.piggy/resources"
-  dirSpecExists <- doesFileExist dirSpecFile
-  when (not dirSpecExists) $ writeFile dirSpecFile ""
-  dirs <- readDirsFrom dirSpecFile
+  let dirSpec = dirSpecFile resourcesDir
+  createDirectoryIfMissing True resourcesDir
+  dirSpecExists <- doesFileExist dirSpec
+  unless dirSpecExists $ writeFile dirSpec ""
+  dirs <- readDirsFrom dirSpec
   getArgs >>= handleCommand dirs >>= putStrLn
