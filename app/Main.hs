@@ -31,7 +31,6 @@ resourcesDir = "/home/lsund/.piggy/resources"
 
 --------------------------------------------------------------------------------
 -- Code
-
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
 
@@ -66,7 +65,6 @@ matchDir m x =
 
 --------------------------------------------------------------------------------
 -- IO
-
 expandPath :: FilePath -> IO FilePath
 expandPath path =
   if path == "."
