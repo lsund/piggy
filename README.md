@@ -27,7 +27,7 @@ p() {
     elif [[ $1 == "r" ]]; then
         $($HOME/.local/bin/piggy-exe $@)
     else
-		$HOME/.local/bin/piggy-exe $@
+        $HOME/.local/bin/piggy-exe $@
     fi
 }
 ```
@@ -80,4 +80,6 @@ p ar edit-zshrc 'vim /home/lsund/.zshrc'
 ```
 # Syntax: p r <tag>
 p r zsh
-``
+```
+
+## Why do we need scripts and
