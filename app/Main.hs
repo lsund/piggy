@@ -5,9 +5,11 @@ module Main where
 import Control.Lens
 import Control.Monad
 import qualified Data.List as L
+import Data.List (sortBy)
 import Data.List.Split (splitOn)
 import Data.Map (Map)
 import qualified Data.Map.Strict as M
+import Data.Maybe (fromMaybe, listToMaybe)
 import Prelude
 import System.Directory
 import System.Environment
@@ -17,7 +19,7 @@ data Location =
     { _path :: FilePath
     , _timesAccessed :: Int
     }
-  deriving (Eq)
+  deriving (Eq, Show)
 
 instance Ord Location where
   compare (Location _ x) (Location _ y) = x `compare` y
@@ -36,7 +38,7 @@ columnWidth :: Int
 columnWidth = 75
 
 parseLine :: [String] -> (String, Location)
-parseLine [x, y, z] = (x, Location y (read z :: Int))
+parseLine [a, b, c, d] = (a, Location b (read c))
 parseLine _ = undefined
 
 match :: String -> String -> Bool
@@ -44,18 +46,19 @@ match = L.isInfixOf
 
 fmtDirs :: Map String Location -> String
 fmtDirs m =
-  let xs = L.sortBy (\x y -> (x ^. _2) `compare` (y ^. _2)) $ M.toList m
+  let xs = sortBy (\x y -> (x ^. _2) `compare` (y ^. _2)) $ M.toList m
    in L.intercalate "\n" $
       map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
-matchDir :: Map String Location -> String -> FilePath
+matchDir :: Map String Location -> String -> Maybe FilePath
 matchDir m x =
   let matches = M.filterWithKey (const . match x) m
-   in case length matches of
-        1 -> _path . snd . head $ M.toList matches
-        _ -> undefined
+   in listToMaybe $ map (_path . snd) $ M.toList matches
+
+--------------------------------------------------------------------------------
+-- IO
 
 expandPath :: FilePath -> IO FilePath
 expandPath path =
@@ -70,7 +73,7 @@ addDirTo fname tag path = do
     appendFile fname (tag <> "," <> expandedPath <> ",0\n")
 
 handleCommand :: Map String Location -> [String] -> IO String
-handleCommand m ("cd":x:_) = return $ matchDir m x
+handleCommand m ("cd":x:_) = return $ fromMaybe "." (matchDir m x)
 handleCommand _ ("cd":_) = return ""
 handleCommand m ("cdl":_) = return . fmtDirs $ m
 handleCommand m ["a", path] = do
