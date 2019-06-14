@@ -1,7 +1,8 @@
 #!/bin/zsh
 
 scriptpath=scripts/prog-cd
-system_scriptpath=~/Documents/scripts
+system_scriptpath=$HOME/.piggy/scripts
+mkdir -p $system_scriptpath
 echo "Copy $scriptpath to $system_scriptpath"
-cp  $scriptpath $system_scriptpath
+cp $scriptpath $system_scriptpath
 stack install

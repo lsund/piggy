@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-cd $(/home/lsund/.local/bin/piggy-exe $@)
+cd $($HOME/.local/bin/piggy-exe $@)
