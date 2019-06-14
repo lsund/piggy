@@ -19,13 +19,11 @@ dependencies:
 - directory
 - lens
 
-library:
-  source-dirs: src
-
 executables:
   piggy-exe:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:
+     - src
     ghc-options:
     - -threaded
     - -rtsopts
