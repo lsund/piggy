@@ -2,7 +2,9 @@
 
 module Main where
 
+import Piggy.Command as Command
 import Piggy.Location as Location
+import Piggy.CliExpression as CliExpression
 
 import Control.Monad
 import Data.List.Split (splitOn)
@@ -23,6 +25,8 @@ resourcesDir = "/home/lsund/.piggy/resources"
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
 
+cmdSpecFile :: FilePath -> FilePath
+cmdSpecFile = flip (<>) "/cmds.csv"
 --------------------------------------------------------------------------------
 -- IO
 expandPath :: FilePath -> IO FilePath
@@ -37,28 +41,38 @@ addDirTo fname tag path = do
   (tag, Location expandedPath 0) <$
     appendFile fname (tag <> "," <> expandedPath <> ",0\n")
 
-handleCommand :: Map String Location -> [String] -> IO String
-handleCommand locs ("cd":x:_) = (return . fromMaybe "." . Location.match x) locs
+firstMatch :: CliExpression a => String -> Map String a -> String
+firstMatch tag = fromMaybe "." . CliExpression.match tag
+
+handleCommand :: (Map String Location, Map String Command) -> [String] -> IO String
+handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch tag locs
 handleCommand _ ("cd":_) = return ""
-handleCommand locs ("cdl":_) = (return . Location.format) locs
-handleCommand locs ["a", path] = do
+handleCommand (locs, _) ("cdl":_) = (return . Location.format) locs
+handleCommand params ["ad", path] = do
   basedir <- last . splitOn "/" <$> expandPath path
-  handleCommand locs ["a", path, basedir]
-handleCommand locs ("a":path:tag:_) =
+  handleCommand params ["ad", path, basedir]
+handleCommand (locs, cmds) ("ad":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
-  (\(x, loc) -> handleCommand (M.insert x loc locs) ["cdl"])
+  (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["cdl"])
+handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch tag cmds
 handleCommand _ _ = return "Unknown command"
 
-readDirsFrom :: FilePath -> IO (Map String Location)
-readDirsFrom fname =
+readSpecFrom :: ([String] -> (String, a)) -> FilePath -> IO (Map String a)
+readSpecFrom parseLine fname =
   M.fromList <$>
-  ((mapM (return . Location.fromLine . splitOn ",") . lines) =<< readFile fname)
+  ((mapM (return . parseLine . splitOn ",") . lines) =<< readFile fname)
+
+touchIfNotExists :: FilePath -> IO ()
+touchIfNotExists path =
+  doesFileExist path >>= (\exists -> unless exists $ writeFile path "")
 
 main :: IO ()
 main = do
-  let dirSpec = dirSpecFile resourcesDir
   createDirectoryIfMissing True resourcesDir
-  dirSpecExists <- doesFileExist dirSpec
-  unless dirSpecExists $ writeFile dirSpec ""
-  dirs <- readDirsFrom dirSpec
-  getArgs >>= handleCommand dirs >>= putStrLn
+  let dirSpec = dirSpecFile resourcesDir
+      cmdSpec = cmdSpecFile resourcesDir
+  touchIfNotExists dirSpec
+  touchIfNotExists cmdSpec
+  dirs <- readSpecFrom Location.fromLine dirSpec
+  cmds <- readSpecFrom Command.fromLine cmdSpec
+  getArgs >>= handleCommand (dirs, cmds) >>= putStrLn
