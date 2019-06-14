@@ -1,10 +1,7 @@
 module Piggy.Util where
 
 import Prelude
-import Data.List (isInfixOf, sortBy)
-
-match :: String -> String -> Bool
-match = isInfixOf
+import Data.List (sortBy)
 
 sort :: Ord b => (a -> b) -> [a] -> [a]
 sort f = sortBy (\x y -> f x `compare` f y)

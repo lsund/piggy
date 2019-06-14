@@ -2,7 +2,7 @@
 
 module Main where
 
-import Piggy.Location
+import Piggy.Location as Location
 
 import Control.Monad
 import Data.List.Split (splitOn)
@@ -38,21 +38,21 @@ addDirTo fname tag path = do
     appendFile fname (tag <> "," <> expandedPath <> ",0\n")
 
 handleCommand :: Map String Location -> [String] -> IO String
-handleCommand m ("cd":x:_) = return $ fromMaybe "." (matchDir m x)
+handleCommand locs ("cd":x:_) = (return . fromMaybe "." . Location.match x) locs
 handleCommand _ ("cd":_) = return ""
-handleCommand m ("cdl":_) = return . fmtDirs $ m
-handleCommand m ["a", path] = do
+handleCommand locs ("cdl":_) = (return . Location.format) locs
+handleCommand locs ["a", path] = do
   basedir <- last . splitOn "/" <$> expandPath path
-  handleCommand m ["a", path, basedir]
-handleCommand m ("a":path:tag:_) =
+  handleCommand locs ["a", path, basedir]
+handleCommand locs ("a":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
-  (\(x, loc) -> handleCommand (M.insert x loc m) ["cdl"])
+  (\(x, loc) -> handleCommand (M.insert x loc locs) ["cdl"])
 handleCommand _ _ = return "Unknown command"
 
 readDirsFrom :: FilePath -> IO (Map String Location)
 readDirsFrom fname =
   M.fromList <$>
-  ((mapM (return . parseLine . splitOn ",") . lines) =<< readFile fname)
+  ((mapM (return . Location.fromLine . splitOn ",") . lines) =<< readFile fname)
 
 main :: IO ()
 main = do

@@ -1,13 +1,13 @@
 module Piggy.Location where
 
-import Prelude
 import Piggy.Util
+import Prelude
 
 import Control.Lens
-import qualified Data.Map.Strict as M
+import Data.List (intercalate, isInfixOf)
 import Data.Map (Map)
+import qualified Data.Map.Strict as M
 import Data.Maybe (listToMaybe)
-import Data.List (intercalate)
 
 data Location =
   Location
@@ -22,19 +22,19 @@ instance Ord Location where
 columnWidth :: Int
 columnWidth = 75
 
-parseLine :: [String] -> (String, Location)
-parseLine [a, b, c] = (a, Location b (read c))
-parseLine _ = undefined
+fromLine :: [String] -> (String, Location)
+fromLine [a, b, c] = (a, Location b (read c))
+fromLine _ = undefined
 
-fmtDirs :: Map String Location -> String
-fmtDirs m =
+format :: Map String Location -> String
+format m =
   let xs = sort (^. _2) $ M.toList m
-   in intercalate "\n" $
-      map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
+   in intercalate "\n" $ map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
-matchDir :: Map String Location -> String -> Maybe FilePath
-matchDir m x =
-  let matches = M.filterWithKey (const . match x) m
-   in listToMaybe $ revSort length $ map (_path . snd) $ M.toList matches
+match :: String -> Map String Location -> Maybe FilePath
+match x =
+  listToMaybe .
+  revSort length .
+  map (_path . snd) . M.toList . M.filterWithKey (const . isInfixOf x)
