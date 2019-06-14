@@ -7,7 +7,7 @@ import Control.Monad
 import qualified Data.List as L
 import Data.List.Split (splitOn)
 import Data.Map (Map)
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import Prelude
 import System.Directory
 import System.Environment
@@ -24,13 +24,11 @@ instance Ord Location where
 
 --------------------------------------------------------------------------------
 -- Configuration
-
-resourcesDir ::  FilePath
+resourcesDir :: FilePath
 resourcesDir = "/home/lsund/.piggy/resources"
 
 --------------------------------------------------------------------------------
 -- Program
-
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
 
@@ -59,23 +57,29 @@ matchDir m x =
         1 -> _path . snd . head $ M.toList matches
         _ -> undefined
 
-addDirTo :: FilePath -> String -> FilePath -> IO String
-addDirTo fname tag path = do
-  cwd <- getCurrentDirectory
-  "OK" <$
-    appendFile
-      fname
-      (tag <> "," <>
-       (if path == "."
-         then cwd
-         else path) <> ",0\n")
+expandPath :: FilePath -> IO FilePath
+expandPath path =
+  if path == "."
+    then getCurrentDirectory
+    else pure path
 
-handleCommand :: Map String Location -> [String] -> IO FilePath
+addDirTo :: FilePath -> String -> FilePath -> IO (String, Location)
+addDirTo fname tag path = do
+  expandedPath <- expandPath path
+  (tag, Location expandedPath 0) <$
+    appendFile fname (tag <> "," <> expandedPath <> ",0\n")
+
+handleCommand :: Map String Location -> [String] -> IO String
 handleCommand m ("cd":x:_) = return $ matchDir m x
 handleCommand _ ("cd":_) = return ""
 handleCommand m ("cdl":_) = return . fmtDirs $ m
-handleCommand _ ("a":tag:path:_) = addDirTo (dirSpecFile resourcesDir)  tag path
-handleCommand _ _ = undefined
+handleCommand m ["a", path] = do
+  basedir <- last . splitOn "/" <$> expandPath path
+  handleCommand m ["a", path, basedir]
+handleCommand m ("a":path:tag:_) =
+  addDirTo (dirSpecFile resourcesDir) tag path >>=
+  (\(x, loc) -> handleCommand (M.insert x loc m) ["cdl"])
+handleCommand _ _ = return "Unknown command"
 
 readDirsFrom :: FilePath -> IO (Map String Location)
 readDirsFrom fname =
