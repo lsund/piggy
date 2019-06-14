@@ -30,7 +30,8 @@ resourcesDir :: FilePath
 resourcesDir = "/home/lsund/.piggy/resources"
 
 --------------------------------------------------------------------------------
--- Program
+-- Code
+
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
 
@@ -38,24 +39,30 @@ columnWidth :: Int
 columnWidth = 75
 
 parseLine :: [String] -> (String, Location)
-parseLine [a, b, c, d] = (a, Location b (read c))
+parseLine [a, b, c] = (a, Location b (read c))
 parseLine _ = undefined
 
-match :: String -> String -> Bool
-match = L.isInfixOf
+sort :: Ord b => (a -> b) -> [a] -> [a]
+sort f = sortBy (\x y -> f x `compare` f y)
+
+revSort :: Ord b => (a -> b) -> [a] -> [a]
+revSort f = sortBy (\x y -> f y `compare` f x)
 
 fmtDirs :: Map String Location -> String
 fmtDirs m =
-  let xs = sortBy (\x y -> (x ^. _2) `compare` (y ^. _2)) $ M.toList m
+  let xs = sort (^. _2) $ M.toList m
    in L.intercalate "\n" $
       map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
   where
     makeSpace x = replicate (columnWidth - length x) ' '
 
+match :: String -> String -> Bool
+match = L.isInfixOf
+
 matchDir :: Map String Location -> String -> Maybe FilePath
 matchDir m x =
   let matches = M.filterWithKey (const . match x) m
-   in listToMaybe $ map (_path . snd) $ M.toList matches
+   in listToMaybe $ revSort length $ map (_path . snd) $ M.toList matches
 
 --------------------------------------------------------------------------------
 -- IO
