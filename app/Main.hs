@@ -2,27 +2,16 @@
 
 module Main where
 
-import Control.Lens
+import Piggy.Location
+
 import Control.Monad
-import qualified Data.List as L
-import Data.List (sortBy)
 import Data.List.Split (splitOn)
 import Data.Map (Map)
 import qualified Data.Map.Strict as M
-import Data.Maybe (fromMaybe, listToMaybe)
+import Data.Maybe (fromMaybe)
 import Prelude
 import System.Directory
 import System.Environment
-
-data Location =
-  Location
-    { _path :: FilePath
-    , _timesAccessed :: Int
-    }
-  deriving (Eq, Show)
-
-instance Ord Location where
-  compare (Location _ x) (Location _ y) = x `compare` y
 
 --------------------------------------------------------------------------------
 -- Configuration
@@ -33,35 +22,6 @@ resourcesDir = "/home/lsund/.piggy/resources"
 -- Code
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
-
-columnWidth :: Int
-columnWidth = 75
-
-parseLine :: [String] -> (String, Location)
-parseLine [a, b, c] = (a, Location b (read c))
-parseLine _ = undefined
-
-sort :: Ord b => (a -> b) -> [a] -> [a]
-sort f = sortBy (\x y -> f x `compare` f y)
-
-revSort :: Ord b => (a -> b) -> [a] -> [a]
-revSort f = sortBy (\x y -> f y `compare` f x)
-
-fmtDirs :: Map String Location -> String
-fmtDirs m =
-  let xs = sort (^. _2) $ M.toList m
-   in L.intercalate "\n" $
-      map (\(x, y) -> _path y <> makeSpace (_path y) <> x) xs
-  where
-    makeSpace x = replicate (columnWidth - length x) ' '
-
-match :: String -> String -> Bool
-match = L.isInfixOf
-
-matchDir :: Map String Location -> String -> Maybe FilePath
-matchDir m x =
-  let matches = M.filterWithKey (const . match x) m
-   in listToMaybe $ revSort length $ map (_path . snd) $ M.toList matches
 
 --------------------------------------------------------------------------------
 -- IO
