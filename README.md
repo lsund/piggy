@@ -81,5 +81,3 @@ p ar edit-zshrc 'vim /home/lsund/.zshrc'
 # Syntax: p r <tag>
 p r zsh
 ```
-
-## Why do we need scripts and
