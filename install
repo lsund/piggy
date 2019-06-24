@@ -1,6 +1,7 @@
 #!/bin/zsh
 
-scriptpath=scripts/prog-cd
+mkdir -p $HOME/.piggy
+scriptpath=script/prog-cd
 system_scriptpath=$HOME/.piggy/scripts
 mkdir -p $system_scriptpath
 echo "Copy $scriptpath to $system_scriptpath"
