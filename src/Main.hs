@@ -2,11 +2,12 @@
 
 module Main where
 
+import Piggy.CliExpression as CliExpression
 import Piggy.Command as Command
 import Piggy.Location as Location
-import Piggy.CliExpression as CliExpression
 
 import Control.Monad
+import Data.List (intercalate)
 import Data.List.Split (splitOn)
 import Data.Map (Map)
 import qualified Data.Map.Strict as M
@@ -27,6 +28,7 @@ dirSpecFile = flip (<>) "/dirs.csv"
 
 cmdSpecFile :: FilePath -> FilePath
 cmdSpecFile = flip (<>) "/cmds.csv"
+
 --------------------------------------------------------------------------------
 -- IO
 expandPath :: FilePath -> IO FilePath
@@ -44,10 +46,33 @@ addDirTo fname tag path = do
 firstMatch :: CliExpression a => String -> String -> Map String a -> String
 firstMatch fallback tag = fromMaybe fallback . CliExpression.match tag
 
-handleCommand :: (Map String Location, Map String Command) -> [String] -> IO String
+formatHelp :: Map String String -> String
+formatHelp m =
+  intercalate "\n" $ map (\(x, y) -> x <> makeSpace x <> y) $ M.toList m
+  where
+    makeSpace x = replicate (20 - length x) ' '
+
+help :: String
+help =
+  "Piggy supports the following commands:\n\n" <>
+  (formatHelp . M.fromList)
+    [ ("h", "Show this help")
+    , ("help", "Show this help")
+    , ("ar", "Add command")
+    , ("ad", "Add directory")
+    , ("dl", "List directories")
+    , ("rl", "List commands")
+    , ("cd", "Enter directory")
+    , ("r", "Run command")
+    ]
+
+handleCommand ::
+     (Map String Location, Map String Command) -> [String] -> IO String
+handleCommand _ ("h":_) = return help
+handleCommand _ ("help":_) = return help
 handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
 handleCommand _ ("cd":_) = return ""
-handleCommand (locs, _) ("cdl":_) = (return . CliExpression.format) locs
+handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
 handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
 handleCommand params ["ad", path] = do
   basedir <- last . splitOn "/" <$> expandPath path
