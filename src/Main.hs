@@ -47,7 +47,8 @@ firstMatch fallback tag = fromMaybe fallback . CliExpression.match tag
 handleCommand :: (Map String Location, Map String Command) -> [String] -> IO String
 handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
 handleCommand _ ("cd":_) = return ""
-handleCommand (locs, _) ("cdl":_) = (return . Location.format) locs
+handleCommand (locs, _) ("cdl":_) = (return . CliExpression.format) locs
+handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
 handleCommand params ["ad", path] = do
   basedir <- last . splitOn "/" <$> expandPath path
   handleCommand params ["ad", path, basedir]
