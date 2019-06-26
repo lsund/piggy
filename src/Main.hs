@@ -73,6 +73,7 @@ formatTags = intercalate "\n" . M.keys
 
 handleCommand ::
      (Map String Location, Map String Command) -> [String] -> IO String
+handleCommand _ [] = return help
 handleCommand _ ("h":_) = return help
 handleCommand _ ("help":_) = return help
 handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
