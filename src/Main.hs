@@ -61,10 +61,15 @@ help =
     , ("ar", "Add command")
     , ("ad", "Add directory")
     , ("dl", "List directories")
+    , ("dlt", "List directory tags")
     , ("rl", "List commands")
+    , ("rlt", "List command tags")
     , ("cd", "Enter directory")
     , ("r", "Run command")
     ]
+
+formatTags :: Map String a -> String
+formatTags = intercalate "\n" . M.keys
 
 handleCommand ::
      (Map String Location, Map String Command) -> [String] -> IO String
@@ -74,6 +79,8 @@ handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
 handleCommand _ ("cd":_) = return ""
 handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
 handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
+handleCommand (locs, _) ("dlt":_) = (return . formatTags) locs
+handleCommand (_, cmds) ("rlt":_) = (return . formatTags) cmds
 handleCommand params ["ad", path] = do
   basedir <- last . splitOn "/" <$> expandPath path
   handleCommand params ["ad", path, basedir]
