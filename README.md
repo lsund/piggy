@@ -20,7 +20,7 @@ listings. I wanted something robuster and more configurable, with a similar feel
 
 This builds the haskell program and populates `~/.piggy/scripts`.
 
-2. Put this bad-boy in your `~/.aliases` or similar.
+2. Put this bad-boy in your `~/.aliases` or similar (TRUST ME).
 
 ```
 function p() {
