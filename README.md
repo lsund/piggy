@@ -10,6 +10,8 @@ listings. I wanted something robuster and more configurable, with a similar feel
 
 ## Install
 
+0. Make sure you have `fzf` installed
+
 1. Call the install script from the piggy root directory.
 
 ```
@@ -18,12 +20,26 @@ listings. I wanted something robuster and more configurable, with a similar feel
 
 This builds the haskell program and populates `~/.piggy/scripts`.
 
-2. Put the following snippet in your `~/.zshrc` or similar.
+2. Put this bad-boy in your `~/.aliases` or similar.
 
 ```
-p() {
-    if [[ $1 == "cd" ]]; then
-        . $HOME/.piggy/scripts/prog-cd $@
+function p() {
+    if [[ $1 == "cd" && $# == "1" ]]; then
+        temp_file=$(mktemp)
+        piggy_dirs=$($HOME/.local/bin/piggy-exe "dlt")
+        dir=$(echo $piggy_dirs | fzf)
+        echo "#!/bin/zsh\ncd $($HOME/.local/bin/piggy-exe cd $dir)" > $temp_file
+        . $temp_file
+        /usr/bin/rm $temp_file
+    elif [[ $1 == "cd" ]]; then
+        temp_file=$(mktemp)
+        echo "#!/bin/zsh\ncd $($HOME/.local/bin/piggy-exe $@)" > $temp_file
+        . $temp_file $@
+        /usr/bin/rm $temp_file
+    elif [[ $1 == "r" && $# == "1" ]]; then
+        piggy_cmds=$($HOME/.local/bin/piggy-exe "rlt")
+        cmd=$(echo $piggy_cmds | fzf)
+        $($HOME/.local/bin/piggy-exe r $cmd)
     elif [[ $1 == "r" ]]; then
         $($HOME/.local/bin/piggy-exe $@)
     else
@@ -35,7 +51,7 @@ p() {
 3. Source it
 
 ```
-source ~/.zshrc
+source ~/.aliases
 ```
 
 ## Usage
