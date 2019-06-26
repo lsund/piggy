@@ -86,7 +86,7 @@ handleCommand params ["ad", path] = do
   handleCommand params ["ad", path, basedir]
 handleCommand (locs, cmds) ("ad":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
-  (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["cdl"])
+  (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["dl"])
 handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
 handleCommand _ _ = return "Unknown command"
 
