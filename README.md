@@ -1,16 +1,34 @@
 # piggy
 
-This is a command line utility for faster command line navigation
+This haskell program + some shell magic will help you navigate the command
+line.
 
 ## Why?
 
-I am a heavy user of Ctrl-R. While the history is nice, it is sometimes hard to
-find the right commands. Also, different shells might have different history
-listings. I wanted something robuster and more configurable, with a similar feel of backwards history search.
+I am a heavy user of Ctrl-R and [fzf](https://github.com/junegunn/fzf). While
+this is nice, I want to be able to have more control over
+
+(1) The commands I execute the most
+(2) The directories I most frequently visit
+
+I want to do this by assigning mental "tags" to each command/directory. Instead
+of writing
+
+```
+cd ~/Documents/tech/scripts/evilcorp/launch-acme-missiles-utilities
+```
+
+I want to be able to type something shorter like
+
+```
+p cd acme
+```
+
+And it should have the same effect. This tool lets me do that.
 
 ## Install
 
-0. Make sure you have `fzf` installed
+0. Make sure you have [fzf](https://github.com/junegunn/fzf) installed
 
 1. Call the install script from the piggy root directory.
 
@@ -48,6 +66,8 @@ function p() {
 }
 ```
 
+Note that this needs to be a command and not a script.
+
 3. Source it
 
 ```
@@ -80,6 +100,8 @@ p ad .
 # The tag does not have to be fully specified, a substring suffices
 p cd foo-repo
 p cd foo
+# The following will open up fzf with the available options
+p cd
 ```
 
 #### Adding a command
@@ -96,4 +118,6 @@ p ar edit-zshrc 'vim /home/lsund/.zshrc'
 ```
 # Syntax: p r <tag>
 p r zsh
+# The following will open up fzf with the available options
+p r
 ```
