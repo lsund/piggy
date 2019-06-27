@@ -16,21 +16,17 @@ import Prelude
 import System.Directory
 import System.Environment
 
---------------------------------------------------------------------------------
--- Configuration
-resourcesDir :: FilePath -> FilePath
-resourcesDir = flip (<>) "/.piggy/runtime-resources"
-
 delimiter :: String
 delimiter = "#"
 
---------------------------------------------------------------------------------
--- Code
 dirSpecFile :: FilePath -> FilePath
 dirSpecFile = flip (<>) "/dirs.csv"
 
 cmdSpecFile :: FilePath -> FilePath
 cmdSpecFile = flip (<>) "/cmds.csv"
+
+resourcesDir :: FilePath -> FilePath
+resourcesDir = flip (<>) "/.piggy/runtime-resources"
 
 --------------------------------------------------------------------------------
 -- IO
