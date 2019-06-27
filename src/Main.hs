@@ -21,6 +21,9 @@ import System.Environment
 resourcesDir :: FilePath
 resourcesDir = "/home/lsund/.piggy/runtime-resources"
 
+delimiter :: String
+delimiter = "#"
+
 --------------------------------------------------------------------------------
 -- Code
 dirSpecFile :: FilePath -> FilePath
@@ -41,7 +44,12 @@ addDirTo :: FilePath -> String -> FilePath -> IO (String, Location)
 addDirTo fname tag path = do
   expandedPath <- expandPath path
   (tag, Location expandedPath 0) <$
-    appendFile fname (tag <> "," <> expandedPath <> ",0\n")
+    appendFile fname (tag <> delimiter <> expandedPath <> delimiter <> "0\n")
+
+addCommandTo :: FilePath -> String -> String -> IO (String, Command)
+addCommandTo fname tag command =
+  (tag, Command command 0) <$
+  appendFile fname (tag <> delimiter <> command <> delimiter <> "0\n")
 
 firstMatch :: CliExpression a => String -> String -> Map String a -> String
 firstMatch fallback tag = fromMaybe fallback . CliExpression.match tag
@@ -73,15 +81,14 @@ formatTags = intercalate "\n" . M.keys
 
 handleCommand ::
      (Map String Location, Map String Command) -> [String] -> IO String
+-- Help
 handleCommand _ [] = return help
 handleCommand _ ("h":_) = return help
 handleCommand _ ("help":_) = return help
+-- Change directory
 handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
 handleCommand _ ("cd":_) = return ""
-handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
-handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
-handleCommand (locs, _) ("dlt":_) = (return . formatTags) locs
-handleCommand (_, cmds) ("rlt":_) = (return . formatTags) cmds
+-- Add a directory
 handleCommand params ["ad"] =
   expandPath "." >>= (\path -> handleCommand params ["ad", path])
 handleCommand params ["ad", path] =
@@ -90,13 +97,22 @@ handleCommand params ["ad", path] =
 handleCommand (locs, cmds) ("ad":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
   (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["dl"])
+-- Run command
 handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
+handleCommand (locs, cmds) ("ar":command:tag:_) =
+  addCommandTo (cmdSpecFile resourcesDir) tag command >>=
+  (\(x, cmd) -> handleCommand (locs, M.insert x cmd cmds) ["rl"])
+-- Lists
+handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
+handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
+handleCommand (locs, _) ("dlt":_) = (return . formatTags) locs
+handleCommand (_, cmds) ("rlt":_) = (return . formatTags) cmds
 handleCommand _ _ = return "Unknown command"
 
 readSpecFrom :: ([String] -> (String, a)) -> FilePath -> IO (Map String a)
 readSpecFrom parseLine fname =
   M.fromList <$>
-  ((mapM (return . parseLine . splitOn ",") . lines) =<< readFile fname)
+  ((mapM (return . parseLine . splitOn delimiter) . lines) =<< readFile fname)
 
 touchIfNotExists :: FilePath -> IO ()
 touchIfNotExists path =

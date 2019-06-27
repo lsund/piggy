@@ -16,9 +16,9 @@ function p() {
     elif [[ $1 == "r" && $# == "1" ]]; then
         piggy_cmds=$($HOME/.local/bin/piggy-exe "rlt")
         cmd=$(echo $piggy_cmds | fzf)
-        $($HOME/.local/bin/piggy-exe r $cmd)
+        sh -c "$($HOME/.local/bin/piggy-exe r $cmd)"
     elif [[ $1 == "r" ]]; then
-        $($HOME/.local/bin/piggy-exe $@)
+        sh -c "$($HOME/.local/bin/piggy-exe $@)"
     else
         $HOME/.local/bin/piggy-exe $@
     fi

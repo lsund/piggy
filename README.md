@@ -28,8 +28,8 @@ And it should have the same effect. This tool lets me do that.
 
 ## Install
 
-Piggy writes to `$HOME/.piggy`. It persists its data to `runtime-resources` and
-install scripts to `scripts`.
+Piggy writes to `$HOME/.piggy`. It persists runtime data to `runtime-resources`
+and install scripts to `scripts`.
 
 0. Make sure you have [fzf](https://github.com/junegunn/fzf) installed
 
