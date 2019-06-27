@@ -1,11 +1,11 @@
 module Piggy.Location where
 
-import           Piggy.CliExpression
-import           Prelude
+import Piggy.CliExpression
+import Prelude
 
 data Location =
   Location
-    { _path          :: FilePath
+    { _path :: FilePath
     , _timesAccessed :: Int
     }
   deriving (Eq, Show)
@@ -18,4 +18,4 @@ instance CliExpression Location where
 
 fromLine :: [String] -> (String, Location)
 fromLine [a, b, c] = (a, Location b (read c))
-fromLine _         = undefined
+fromLine _ = undefined

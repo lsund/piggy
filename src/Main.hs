@@ -99,6 +99,7 @@ handleCommand (locs, cmds) ("ad":path:tag:_) =
   (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["dl"])
 -- Run command
 handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
+-- Add command
 handleCommand (locs, cmds) ("ar":command:tag:_) =
   addCommandTo (cmdSpecFile resourcesDir) tag command >>=
   (\(x, cmd) -> handleCommand (locs, M.insert x cmd cmds) ["rl"])
