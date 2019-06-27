@@ -75,8 +75,11 @@ help =
 formatTags :: Map String a -> String
 formatTags = intercalate "\n" . M.keys
 
-handleCommand :: (FilePath, FilePath) ->
-     (Map String Location, Map String Command) -> [String] -> IO String
+handleCommand ::
+     (FilePath, FilePath)
+  -> (Map String Location, Map String Command)
+  -> [String]
+  -> IO String
 -- Help
 handleCommand _ _ [] = return help
 handleCommand _ _ ("h":_) = return help
@@ -92,13 +95,15 @@ handleCommand s params ["ad", path] =
   (\basedir -> handleCommand s params ["ad", path, basedir])
 handleCommand (dirspec, cmdspec) (locs, cmds) ("ad":path:tag:_) =
   addDirTo dirspec tag path >>=
-  (\(x, loc) -> handleCommand (dirspec, cmdspec) (M.insert x loc locs, cmds) ["dl"])
+  (\(x, loc) ->
+     handleCommand (dirspec, cmdspec) (M.insert x loc locs, cmds) ["dl"])
 -- Run command
 handleCommand _ (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
 -- Add command
 handleCommand (dirspec, cmdspec) (locs, cmds) ("ar":command:tag:_) =
   addCommandTo cmdspec tag command >>=
-  (\(x, cmd) -> handleCommand (dirspec, cmdspec) (locs, M.insert x cmd cmds) ["rl"])
+  (\(x, cmd) ->
+     handleCommand (dirspec, cmdspec) (locs, M.insert x cmd cmds) ["rl"])
 -- Lists
 handleCommand _ (locs, _) ("dl":_) = (return . CliExpression.format) locs
 handleCommand _ (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
