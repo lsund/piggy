@@ -1,9 +1,19 @@
 #!/bin/zsh
 
-mkdir -p $HOME/.piggy
-scriptpath=script/prog-cd
-system_scriptpath=$HOME/.piggy/scripts
-mkdir -p $system_scriptpath
-echo "Copy $scriptpath to $system_scriptpath"
-cp $scriptpath $system_scriptpath
+prog_cd="zsh/prog-cd"
+fns="zsh/functions"
+system_scriptpath="$HOME/.piggy/scripts"
+
+mkdir -p "$HOME/.piggy"
+mkdir -p "$system_scriptpath"
+
+echo "Copy $prog_cd to $system_scriptpath"
+cp $prog_cd $system_scriptpath
+
+echo "Copy $fns to $system_scriptpath"
+cp $fns $system_scriptpath
+
+echo "Installing piggy to $HOME/.local/bin"
 stack install
+
+echo "You might want to put 'source $HOME/.piggy/scripts/funcions' in your zshrc"

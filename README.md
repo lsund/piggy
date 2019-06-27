@@ -15,7 +15,7 @@ I want to do this by assigning mental "tags" to each command/directory. Instead
 of writing
 
 ```
-cd ~/Documents/tech/scripts/evilcorp/launch-acme-missiles-utilities
+cd ~/Documents/tech/scripts/evilcorp/acme-missiles-utilities
 ```
 
 I want to be able to type something shorter like
@@ -38,41 +38,13 @@ And it should have the same effect. This tool lets me do that.
 
 This builds the haskell program and populates `~/.piggy/scripts`.
 
-2. Put this bad-boy in your `~/.aliases` or similar (TRUST ME).
+2. put the following line in your zshrc (TRUST ME).
 
 ```
-function p() {
-    if [[ $1 == "cd" && $# == "1" ]]; then
-        temp_file=$(mktemp)
-        piggy_dirs=$($HOME/.local/bin/piggy-exe "dlt")
-        dir=$(echo $piggy_dirs | fzf)
-        echo "#!/bin/zsh\ncd $($HOME/.local/bin/piggy-exe cd $dir)" > $temp_file
-        . $temp_file
-        /usr/bin/rm $temp_file
-    elif [[ $1 == "cd" ]]; then
-        temp_file=$(mktemp)
-        echo "#!/bin/zsh\ncd $($HOME/.local/bin/piggy-exe $@)" > $temp_file
-        . $temp_file $@
-        /usr/bin/rm $temp_file
-    elif [[ $1 == "r" && $# == "1" ]]; then
-        piggy_cmds=$($HOME/.local/bin/piggy-exe "rlt")
-        cmd=$(echo $piggy_cmds | fzf)
-        $($HOME/.local/bin/piggy-exe r $cmd)
-    elif [[ $1 == "r" ]]; then
-        $($HOME/.local/bin/piggy-exe $@)
-    else
-        $HOME/.local/bin/piggy-exe $@
-    fi
-}
+source $HOME/.piggy/scripts/functions
 ```
 
-Note that this needs to be a command and not a script.
-
-3. Source it
-
-```
-source ~/.aliases
-```
+This will setup the alias `p` for you.
 
 ## Usage
 
