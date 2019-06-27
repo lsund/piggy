@@ -50,19 +50,21 @@ This will setup the alias `p` for you.
 
 #### Adding directories
 
-Piggy associates tags with commands or directories. A tag is just a string to
-match on.
+Piggy associates mental tags with commands or directories. A tag is just a
+string to match on.
 
 To add a directory, navigate to a directory and call the add command.
 
 ```
 # Syntax: p ad <path> <tag>
 #         p ad <path>
+#         p ad
 cd $HOME/path/to/foo-repo
 p ad . foo-repo
-# By omitting the third argument, the current base directory is used
-# as tag
+# The following has the same effect as the above
 p ad .
+# And yet again...
+p ad
 ```
 
 #### Changing directory
@@ -93,3 +95,4 @@ p r zsh
 # The following will open up fzf with the available options
 p r
 ```
+

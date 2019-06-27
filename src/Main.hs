@@ -82,9 +82,11 @@ handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
 handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
 handleCommand (locs, _) ("dlt":_) = (return . formatTags) locs
 handleCommand (_, cmds) ("rlt":_) = (return . formatTags) cmds
-handleCommand params ["ad", path] = do
-  basedir <- last . splitOn "/" <$> expandPath path
-  handleCommand params ["ad", path, basedir]
+handleCommand params ["ad"] =
+  expandPath "." >>= (\path -> handleCommand params ["ad", path])
+handleCommand params ["ad", path] =
+  last . splitOn "/" <$> expandPath path >>=
+  (\basedir -> handleCommand params ["ad", path, basedir])
 handleCommand (locs, cmds) ("ad":path:tag:_) =
   addDirTo (dirSpecFile resourcesDir) tag path >>=
   (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["dl"])
