@@ -19,7 +19,7 @@ import System.Environment
 --------------------------------------------------------------------------------
 -- Configuration
 resourcesDir :: FilePath
-resourcesDir = "/home/lsund/.piggy/resources"
+resourcesDir = "/home/lsund/.piggy/runtime-resources"
 
 --------------------------------------------------------------------------------
 -- Code

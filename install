@@ -16,4 +16,5 @@ cp $fns $system_scriptpath
 echo "Installing piggy to $HOME/.local/bin"
 stack install
 
-echo "You might want to put 'source $HOME/.piggy/scripts/funcions' in your zshrc"
+echo "You might want to put 'source $HOME/.piggy/scripts/funcions'"
+echo "in your zshrc If you havn't already done so."

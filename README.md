@@ -28,6 +28,9 @@ And it should have the same effect. This tool lets me do that.
 
 ## Install
 
+Piggy writes to `$HOME/.piggy`. It persists its data to `runtime-resources` and
+install scripts to `scripts`.
+
 0. Make sure you have [fzf](https://github.com/junegunn/fzf) installed
 
 1. Call the install script from the piggy root directory.
@@ -74,13 +77,14 @@ p ad
 # The tag does not have to be fully specified, a substring suffices
 p cd foo-repo
 p cd foo
-# The following will open up fzf with the available options
+# The following will open up fzf with the available tags
 p cd
 ```
 
 #### Adding a command
 
-Adding a command is done similar to adding a directory
+Adding a command is done similar to adding a directory. When adding a command,
+you always have to specify both command and tag.
 
 ```
 # Syntax: p ar <command> <tag>
@@ -92,7 +96,7 @@ p ar edit-zshrc 'vim /home/lsund/.zshrc'
 ```
 # Syntax: p r <tag>
 p r zsh
-# The following will open up fzf with the available options
+# The following will open up fzf with the available tags
 p r
 ```
 
