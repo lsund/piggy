@@ -8,8 +8,8 @@ line.
 I am a heavy user of Ctrl-R and [fzf](https://github.com/junegunn/fzf). While
 this is nice, I want to be able to have more control over
 
-(1) The commands I execute the most
-(2) The directories I most frequently visit
+* The commands I execute the most
+* The directories I most frequently visit
 
 I want to do this by assigning mental "tags" to each command/directory. Instead
 of writing
