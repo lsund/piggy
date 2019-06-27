@@ -28,25 +28,6 @@ cmdSpecFile = flip (<>) "/cmds.csv"
 resourcesDir :: FilePath -> FilePath
 resourcesDir = flip (<>) "/.piggy/runtime-resources"
 
---------------------------------------------------------------------------------
--- IO
-expandPath :: FilePath -> IO FilePath
-expandPath path =
-  if path == "."
-    then getCurrentDirectory
-    else pure path
-
-addDirTo :: FilePath -> String -> FilePath -> IO (String, Location)
-addDirTo fname tag path = do
-  expandedPath <- expandPath path
-  (tag, Location expandedPath 0) <$
-    appendFile fname (tag <> delimiter <> expandedPath <> delimiter <> "0\n")
-
-addCommandTo :: FilePath -> String -> String -> IO (String, Command)
-addCommandTo fname tag command =
-  (tag, Command command 0) <$
-  appendFile fname (tag <> delimiter <> command <> delimiter <> "0\n")
-
 firstMatch :: CliExpression a => String -> String -> Map String a -> String
 firstMatch fallback tag = fromMaybe fallback . CliExpression.match tag
 
@@ -110,6 +91,25 @@ handleCommand _ (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
 handleCommand _ (locs, _) ("dlt":_) = (return . formatTags) locs
 handleCommand _ (_, cmds) ("rlt":_) = (return . formatTags) cmds
 handleCommand _ _ _ = return "Unknown command"
+
+--------------------------------------------------------------------------------
+-- IO
+expandPath :: FilePath -> IO FilePath
+expandPath path =
+  if path == "."
+    then getCurrentDirectory
+    else pure path
+
+addDirTo :: FilePath -> String -> FilePath -> IO (String, Location)
+addDirTo fname tag path = do
+  expandedPath <- expandPath path
+  (tag, Location expandedPath 0) <$
+    appendFile fname (tag <> delimiter <> expandedPath <> delimiter <> "0\n")
+
+addCommandTo :: FilePath -> String -> String -> IO (String, Command)
+addCommandTo fname tag command =
+  (tag, Command command 0) <$
+  appendFile fname (tag <> delimiter <> command <> delimiter <> "0\n")
 
 readSpecFrom :: ([String] -> (String, a)) -> FilePath -> IO (Map String a)
 readSpecFrom parseLine fname =
