@@ -18,8 +18,8 @@ import System.Environment
 
 --------------------------------------------------------------------------------
 -- Configuration
-resourcesDir :: FilePath
-resourcesDir = "/home/lsund/.piggy/runtime-resources"
+resourcesDir :: FilePath -> FilePath
+resourcesDir = flip (<>) "/.piggy/runtime-resources"
 
 delimiter :: String
 delimiter = "#"
@@ -79,36 +79,36 @@ help =
 formatTags :: Map String a -> String
 formatTags = intercalate "\n" . M.keys
 
-handleCommand ::
+handleCommand :: (FilePath, FilePath) ->
      (Map String Location, Map String Command) -> [String] -> IO String
 -- Help
-handleCommand _ [] = return help
-handleCommand _ ("h":_) = return help
-handleCommand _ ("help":_) = return help
+handleCommand _ _ [] = return help
+handleCommand _ _ ("h":_) = return help
+handleCommand _ _ ("help":_) = return help
 -- Change directory
-handleCommand (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
-handleCommand _ ("cd":_) = return ""
+handleCommand _ (locs, _) ("cd":tag:_) = return $ firstMatch "." tag locs
+handleCommand _ _ ("cd":_) = return ""
 -- Add a directory
-handleCommand params ["ad"] =
-  expandPath "." >>= (\path -> handleCommand params ["ad", path])
-handleCommand params ["ad", path] =
+handleCommand s params ["ad"] =
+  expandPath "." >>= (\path -> handleCommand s params ["ad", path])
+handleCommand s params ["ad", path] =
   last . splitOn "/" <$> expandPath path >>=
-  (\basedir -> handleCommand params ["ad", path, basedir])
-handleCommand (locs, cmds) ("ad":path:tag:_) =
-  addDirTo (dirSpecFile resourcesDir) tag path >>=
-  (\(x, loc) -> handleCommand (M.insert x loc locs, cmds) ["dl"])
+  (\basedir -> handleCommand s params ["ad", path, basedir])
+handleCommand (dirspec, cmdspec) (locs, cmds) ("ad":path:tag:_) =
+  addDirTo dirspec tag path >>=
+  (\(x, loc) -> handleCommand (dirspec, cmdspec) (M.insert x loc locs, cmds) ["dl"])
 -- Run command
-handleCommand (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
+handleCommand _ (_, cmds) ("r":tag:_) = return $ firstMatch ";" tag cmds
 -- Add command
-handleCommand (locs, cmds) ("ar":command:tag:_) =
-  addCommandTo (cmdSpecFile resourcesDir) tag command >>=
-  (\(x, cmd) -> handleCommand (locs, M.insert x cmd cmds) ["rl"])
+handleCommand (dirspec, cmdspec) (locs, cmds) ("ar":command:tag:_) =
+  addCommandTo cmdspec tag command >>=
+  (\(x, cmd) -> handleCommand (dirspec, cmdspec) (locs, M.insert x cmd cmds) ["rl"])
 -- Lists
-handleCommand (locs, _) ("dl":_) = (return . CliExpression.format) locs
-handleCommand (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
-handleCommand (locs, _) ("dlt":_) = (return . formatTags) locs
-handleCommand (_, cmds) ("rlt":_) = (return . formatTags) cmds
-handleCommand _ _ = return "Unknown command"
+handleCommand _ (locs, _) ("dl":_) = (return . CliExpression.format) locs
+handleCommand _ (_, cmds) ("rl":_) = (return . CliExpression.format) cmds
+handleCommand _ (locs, _) ("dlt":_) = (return . formatTags) locs
+handleCommand _ (_, cmds) ("rlt":_) = (return . formatTags) cmds
+handleCommand _ _ _ = return "Unknown command"
 
 readSpecFrom :: ([String] -> (String, a)) -> FilePath -> IO (Map String a)
 readSpecFrom parseLine fname =
@@ -121,11 +121,12 @@ touchIfNotExists path =
 
 main :: IO ()
 main = do
-  createDirectoryIfMissing True resourcesDir
-  let dirSpec = dirSpecFile resourcesDir
-      cmdSpec = cmdSpecFile resourcesDir
+  home <- getHomeDirectory
+  createDirectoryIfMissing True $ resourcesDir home
+  let dirSpec = dirSpecFile $ resourcesDir home
+      cmdSpec = cmdSpecFile $ resourcesDir home
   touchIfNotExists dirSpec
   touchIfNotExists cmdSpec
   dirs <- readSpecFrom Location.fromLine dirSpec
   cmds <- readSpecFrom Command.fromLine cmdSpec
-  getArgs >>= handleCommand (dirs, cmds) >>= putStrLn
+  getArgs >>= handleCommand (dirSpec, cmdSpec) (dirs, cmds) >>= putStrLn
