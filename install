@@ -1,14 +1,10 @@
 #!/bin/zsh
 
-prog_cd="zsh/prog-cd"
 fns="zsh/functions"
 system_scriptpath="$HOME/.piggy/scripts"
 
 mkdir -p "$HOME/.piggy"
 mkdir -p "$system_scriptpath"
-
-echo "Copy $prog_cd to $system_scriptpath"
-cp $prog_cd $system_scriptpath
 
 echo "Copy $fns to $system_scriptpath"
 cp $fns $system_scriptpath
