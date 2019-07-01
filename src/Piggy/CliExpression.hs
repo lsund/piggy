@@ -18,7 +18,7 @@ match x =
   map (expand . snd) . M.toList . M.filterWithKey (const . isInfixOf x)
 
 columnWidth :: Int
-columnWidth = 75
+columnWidth = 120
 
 format :: (CliExpression a, Ord a) => Map String a -> String
 format m =
